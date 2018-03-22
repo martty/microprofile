@@ -7293,7 +7293,7 @@ void MicroProfileContextSwitchShutdownTrace()
 
 	EVENT_TRACE_LOGFILE log;
 	ZeroMemory(&log, sizeof(log));
-	log.LoggerName = KERNEL_LOGGER_NAME;
+	log.LoggerName = const_cast<LPSTR>(KERNEL_LOGGER_NAME);
 	log.ProcessTraceMode = 0;
 	TRACEHANDLE hLog = OpenTrace(&log);
 	if (hLog)
@@ -7338,7 +7338,7 @@ bool MicroProfileStartWin32Trace(EventCallback EvtCb, BufferCallback BufferCB)
 	EVENT_TRACE_LOGFILE log;
 	ZeroMemory(&log, sizeof(log));
 
-	log.LoggerName = KERNEL_LOGGER_NAME;
+	log.LoggerName = const_cast<LPSTR>(KERNEL_LOGGER_NAME);
 	log.ProcessTraceMode = PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_RAW_TIMESTAMP;
 	log.EventCallback = EvtCb;
 	log.BufferCallback = BufferCB;
