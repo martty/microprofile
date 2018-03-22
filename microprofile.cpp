@@ -1949,6 +1949,53 @@ void MicroProfileRegisterGroup(const char* pGroup, const char* pCategory, uint32
 	}
 }
 
+struct MicroProfileSuspendData {
+	uint32_t n_entries;
+	uint32_t * entries;
+};
+
+#include <set>
+
+MICROPROFILE_API MicroProfileSuspendData * MicroProfileSuspend() {
+	MicroProfileThreadLog* pLog = MicroProfileGetThreadLog2();
+	uint64_t nTick = MP_TICK();
+
+	auto result = new MicroProfileSuspendData();
+	result->n_entries = 0;// ;
+	result->entries = new uint32_t[pLog->nStackPut];
+	uint32_t range[2][2];
+	MicroProfileGetRange(pLog->nPut, pLog->nGet, range);
+	auto cnt = 0;
+	std::set<uint32_t> tokens;
+	for(auto i = range[0][0]; i < range[0][1]; i++){
+		auto idx = MicroProfileLogGetTimerIndex(pLog->Log[i]);
+		auto type = MicroProfileLogGetType(pLog->Log[i]);
+		if (type == MP_LOG_ENTER) {
+			tokens.insert(idx);
+		} else if (type == MP_LOG_LEAVE) {
+			tokens.erase(idx);
+		}
+	}
+	for (auto& idx : tokens) {
+		MicroProfileLeaveInternal(S.TimerInfo[idx].nToken, nTick);
+		result->entries[result->n_entries++] = idx;
+	}
+
+	return result;
+}
+
+MICROPROFILE_API void MicroProfileResume(MicroProfileSuspendData* susp) {
+	MicroProfileThreadLog* pLog = MicroProfileGetThreadLog2();
+	uint64_t nTick = MP_TICK();
+
+	for (auto i = 0; i < susp->n_entries; i++) {
+		MicroProfileEnterInternal(S.TimerInfo[susp->entries[i]].nToken);
+	}
+
+	delete(susp->entries);
+	delete(susp);
+}
+
 MicroProfileToken MicroProfileGetToken(const char* pGroup, const char* pName, uint32_t nColor, MicroProfileTokenType Type)
 {
 	MicroProfileInit();

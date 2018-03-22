@@ -485,6 +485,7 @@ typedef enum MicroProfileTokenType_t
 struct MicroProfile;
 struct MicroProfileThreadLogGpu;
 struct MicroProfileScopeStateC;
+struct MicroProfileSuspendData;
 
 #ifdef __cplusplus
 extern "C" {
@@ -568,6 +569,8 @@ MICROPROFILE_API int MicroProfileFormatCounter(int eFormat, int64_t nCounter, ch
 MICROPROFILE_API struct MicroProfileThreadLogGpu* MicroProfileGetGlobalGpuThreadLog();
 MICROPROFILE_API int MicroProfileGetGlobalGpuQueue();
 MICROPROFILE_API void MicroProfileRegisterGroup(const char* pGroup, const char* pCategory, uint32_t nColor);
+MICROPROFILE_API MicroProfileSuspendData* MicroProfileSuspend();
+MICROPROFILE_API void MicroProfileResume(MicroProfileSuspendData*);
 #if MICROPROFILE_PLATFORM_MARKERS
 MICROPROFILE_API void MicroProfilePlatformMarkerBegin(uint32_t nColor, const char * pMarker); //not implemented by microprofile.
 MICROPROFILE_API void MicroProfilePlatformMarkerEnd();//not implemented by microprofile.
