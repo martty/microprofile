@@ -1976,6 +1976,15 @@ MICROPROFILE_API MicroProfileSuspendData * MicroProfileSuspend() {
 			tokens.erase(idx);
 		}
 	}
+	for (auto i = range[1][0]; i < range[1][1]; i++) {
+		auto idx = MicroProfileLogGetTimerIndex(pLog->Log[i]);
+		auto type = MicroProfileLogGetType(pLog->Log[i]);
+		if (type == MP_LOG_ENTER) {
+			tokens.insert(idx);
+		} else if (type == MP_LOG_LEAVE) {
+			tokens.erase(idx);
+		}
+	}
 	for (auto& idx : tokens) {
 		MicroProfileLeaveInternal(S.TimerInfo[idx].nToken, nTick);
 		result->entries[result->n_entries++] = idx;
@@ -4873,6 +4882,8 @@ void MicroProfileDumpToFile()
 			fclose(F);
 		}
 	}
+
+	S.nDumpFileNextFrame = 0;
 }
 
 void MicroProfileFlushSocket(MpSocket Socket)
@@ -5557,6 +5568,7 @@ void* MicroProfileSocketSenderThread(void*)
 
 void MicroProfileSocketSend(MpSocket Connection, const void* pMessage, int nLen)
 {
+	int retrycount = 0;
 	if(S.nSocketFail || nLen <= 0)
 	{
 		return;
@@ -5600,7 +5612,8 @@ void MicroProfileSocketSend(MpSocket Connection, const void* pMessage, int nLen)
 			}
 			MicroProfileSleep(20);
 		}
-
+		if (retrycount > 50)
+			return;
 
 
 	}
@@ -7493,6 +7506,7 @@ const char* MicroProfileWin32ThreadInfoAddString(const char* pString)
 void MicroProfileWin32ExtractModules(MicroProfileWin32ThreadInfo::Process& P)
 {
 	HANDLE hModuleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, P.pid);
+	if (hModuleSnapshot == INVALID_HANDLE_VALUE) return;
 	MODULEENTRY32 me;
 	if (Module32First(hModuleSnapshot, &me))
 	{

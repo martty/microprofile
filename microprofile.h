@@ -379,7 +379,7 @@ typedef void (*MicroProfileOnFreeze)(int nFrozen);
 #endif
 
 #ifndef MICROPROFILE_MAX_THREADS
-#define MICROPROFILE_MAX_THREADS 32
+#define MICROPROFILE_MAX_THREADS 1024
 #endif 
 
 #ifndef MICROPROFILE_UNPACK_RED
@@ -571,6 +571,12 @@ MICROPROFILE_API int MicroProfileGetGlobalGpuQueue();
 MICROPROFILE_API void MicroProfileRegisterGroup(const char* pGroup, const char* pCategory, uint32_t nColor);
 MICROPROFILE_API MicroProfileSuspendData* MicroProfileSuspend();
 MICROPROFILE_API void MicroProfileResume(MicroProfileSuspendData*);
+
+namespace std {
+	class recursive_mutex;
+}
+MICROPROFILE_API std::recursive_mutex& MicroProfileGetMutex();
+
 #if MICROPROFILE_PLATFORM_MARKERS
 MICROPROFILE_API void MicroProfilePlatformMarkerBegin(uint32_t nColor, const char * pMarker); //not implemented by microprofile.
 MICROPROFILE_API void MicroProfilePlatformMarkerEnd();//not implemented by microprofile.
